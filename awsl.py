@@ -73,18 +73,23 @@ def delete_aws_acc_from_db(account_name):
         print(f"{account_name} successfuly removed.")
     except:
         print(f"{account_name} couldn't removed.")
-# list existing accounts from db and check if there is account match.
-# def list_account_from_db(account_name):
-#     try:
-#         if account_name in (db.search(Query().acc_name == f'{account_name}')[0]['acc_name']):
-#             return account_name
-#     except:
-#         return(f"There is no account named {account_name} ...")
+
+# insert new password to db
+def change_password_from_db(account_name):
+    try:
+        if account_name in (db.search(Query().acc_name == f'{account_name}')[0]['acc_name']):
+            new_pass = getpass(f"Enter new password for {account_name} : ")
+            db.update({'password': f'{new_pass}'}, Query().acc_name == f'{account_name}')
+            db.all()
+            print (f"Password succesfuly changed for {account_name} . ")
+        else:
+            print(f"There is no account named {account_name} ...")
+    except:
+        print(f"There is no account named {account_name} ...")
 
 def list_accounts_from_db():
     accounts = [r['acc_name'] for r in db]
     return accounts
-
 
 if __name__ == "__main__":
 
@@ -96,11 +101,15 @@ if __name__ == "__main__":
     parser.add_argument('-m', '--mfa' ,type=int, required=False, help="Login with MFA code.")
     parser.add_argument('-a', '--add' ,type=str, required=False, help="Add new account.")
     parser.add_argument('-r', '--remove' ,type=str, required=False, help="Remove an account with account name")
+    parser.add_argument('-u', '--update' ,type=str, required=False, help="Change password for existing account.")
     parser.add_argument("login" , nargs="?", help="Login to selected account, awsl <aws_acc>")
     args = parser.parse_args()
 
+
     if (args.add):
         instert_aws_acc_to_db(account_name=args.add)
+    elif (args.update):
+        change_password_from_db(account_name=args.update)
     elif (args.mfa):
         browser = webdriver.Chrome()
         login_to_aws_account_with_mfa(account_name=args.login, mfa=args.mfa)
